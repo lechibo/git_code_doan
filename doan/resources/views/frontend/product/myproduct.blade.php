@@ -11,7 +11,7 @@
                         
                          <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h4 class="panel-title"><a href="{{route('account.update')}}">account</a></h4>
+                                <h4 class="panel-title"><a href="{{route('account.update')}}">Account</a></h4>
                             </div>
                         </div>
                         <div class="panel panel-default">
@@ -43,7 +43,13 @@
                             </tr>
                         </thead>
                         <tbody>
-                            
+                        @if($products->isEmpty())
+                            <tr>
+                                <td colspan="4" class="text-center">
+                                    Không có mặt hàng nào.
+                                </td>
+                            </tr>
+                        @else
                             @foreach($products as $product)
                             @php
                                 $images = json_decode($product->image, true);
@@ -65,13 +71,14 @@
                                 </td>
                                 
                                 <td class="cart_total">
-                                    <a>edit</a>
-                                    <a>delete</a>
+                                    <a href="{{ route('account.editproduct', $product->id) }}">Edit</a>
+
+                                    <a href="{{ route('account.deleteproduct', $product->id) }}">Delete</a>
                                 </td>
                                 
                             </tr>
                             @endforeach
-
+                        @endif
                         </tbody>
                     </table>
                 </div>

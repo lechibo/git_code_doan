@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\ProductRequest;
 use Illuminate\Support\facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Intervention\Image\Laravel\Facades\Image;
 
 class ProductController extends Controller
 {
@@ -28,7 +29,7 @@ class ProductController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function Getadd()
     {
         if (!Auth::check()) {
             return "ban chua dang nhap";
@@ -42,7 +43,7 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(ProductRequest  $request)
+    public function Postadd(ProductRequest  $request)
     {
         $data = $request->all();
 
@@ -57,10 +58,27 @@ class ProductController extends Controller
             foreach ($request->file('image') as $file) {
 
                 $imageName = time().'_'.$file->getClientOriginalName();
+                $fullName=pathinfo($imageName,PATHINFO_FILENAME);
+                $duoi=$file->getClientOriginalExtension();
 
-                $file->move(public_path('images/product'), $imageName);
+                $imagefull=$fullName.'_full.'.$duoi;
+                $image329=$fullName.'_329x380.'.$duoi;
+                $image85=$fullName.'_85x84.'.$duoi;
 
-                $images[] = $imageName;
+                //lưu full
+                $file->move(public_path('images/product/'), $imagefull);
+                $images[] = $imagefull;
+                //resize
+                $path=public_path('images/product/'.$imagefull);
+
+                Image::read($path)
+                ->resize(329,380)
+                ->save(public_path('images/product/'.$image329));
+                Image::read($path)
+                ->resize(85,84)
+                ->save(public_path('images/product/'.$image85));
+
+               
             }
 
             $data['image'] = json_encode($images);
@@ -68,7 +86,7 @@ class ProductController extends Controller
 
         Product::create($data);
 
-        return redirect()->back()->with('success', 'Thêm sản phẩm thành công.');
+        return redirect()->route('account.myproduct')->with('success', 'Thêm sản phẩm thành công.');
     }
 
     /**
@@ -82,9 +100,107 @@ class ProductController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Product $product)
+    public function Postedit(ProductRequest  $request,$id)
     {
-        //
+        // $product = Product::findOrFail($id);
+        $product = Product::where('id', $id)
+            ->where('id_user', Auth::id())
+            ->firstOrFail();
+        $data = $request->all();
+        $oldImages = json_decode($product->image, true);
+        if (!$oldImages) {
+            $oldImages = [];
+        }
+
+        if ($request->has('image_delete')) {
+
+            foreach ($request->image_delete as $deleteImage) {
+                $key = array_search($deleteImage, $oldImages);
+                if ($key !== false) {
+
+                    unset($oldImages[$key]);
+                    $pathFull = public_path('images/product/'.$deleteImage);
+                    $path329 = public_path('images/product/'.str_replace('_full', '_329x380', $deleteImage));
+                    $path85 = public_path('images/product/'.str_replace('_full', '_85x84', $deleteImage));
+
+                    if (file_exists($pathFull)) {
+                        unlink($pathFull);
+                    }
+
+                    if (file_exists($path329)) {
+                        unlink($path329);
+                    }
+
+                    if (file_exists($path85)) {
+                        unlink($path85);
+                    }
+
+                }
+
+            }
+
+            $oldImages = array_values($oldImages);
+
+        }
+        $newImages = [];
+        // Upload nhiều ảnh
+        if ($request->hasFile('image')) {
+
+            foreach ($request->file('image') as $file) {
+
+                $imageName = time().'_'.$file->getClientOriginalName();
+                $fullName=pathinfo($imageName,PATHINFO_FILENAME);
+                $duoi=$file->getClientOriginalExtension();
+
+                $imagefull=$fullName.'_full.'.$duoi;
+                $image329=$fullName.'_329x380.'.$duoi;
+                $image85=$fullName.'_85x84.'.$duoi;
+
+                //lưu full
+                $file->move(public_path('images/product/'), $imagefull);
+                $newImages[] = $imagefull;
+                //resize
+                $path=public_path('images/product/'.$imagefull);
+
+                Image::read($path)
+                ->resize(329,380)
+                ->save(public_path('images/product/'.$image329));
+                Image::read($path)
+                ->resize(85,84)
+                ->save(public_path('images/product/'.$image85));
+
+               
+            }
+        }
+        $images = array_merge($oldImages, $newImages);
+        if(count($images) > 3){
+
+            return back()->withErrors(['image' => 'Chỉ được tối đa 3 ảnh.'])->withInput();
+
+        }
+        
+        $data['image'] = json_encode($images);
+        $product->update($data);
+
+        return redirect()->route('account.myproduct')->with('success', 'Update sản phẩm thành công.');
+    }
+    public function Getedit($id)
+    {
+        if (!Auth::check()) {
+            return "ban chua dang nhap";
+        }
+
+        // $product = Product::findOrFail($id);
+        $product = Product::where('id', $id)
+            ->where('id_user', Auth::id())
+            ->firstOrFail();
+
+        $categories = Category::all();
+        $brands = Brand::all();
+
+        $images = json_decode($product->image, true);
+
+        return view('frontend.product.editproduct',compact('product', 'categories', 'brands', 'images'));
     }
 
     /**
@@ -98,8 +214,51 @@ class ProductController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Product $product)
+    public function Postdestroy($id)
     {
-        //
+        $product = Product::where('id', $id)
+        ->where('id_user', Auth::id())
+        ->firstOrFail();
+
+        $images = json_decode($product->image, true) ?? [];
+
+        foreach ($images as $image) {
+
+            $full = public_path('images/product/'.$image);
+            $img329 = public_path(
+                'images/product/'.
+                str_replace('_full', '_329x380', $image)
+            );
+            $img85 = public_path(
+                'images/product/'.
+                str_replace('_full', '_85x84', $image)
+            );
+
+            if (file_exists($full)) {
+                unlink($full);
+            }
+
+            if (file_exists($img329)) {
+                unlink($img329);
+            }
+
+            if (file_exists($img85)) {
+                unlink($img85);
+            }
+        }
+
+        $product->delete();
+
+        return redirect()
+            ->route('account.myproduct')
+            ->with('success', 'Xóa sản phẩm thành công.');
     }
+    public function Getdestroy($id){
+        $product = Product::where('id', $id)
+            ->where('id_user', Auth::id())
+            ->firstOrFail();
+
+    return view('frontend.product.deleteproduct', compact('product'));
+    }
+
 }

@@ -90,8 +90,14 @@ Route::post('/frontend/account/update',[ProfilesMembersController::class, 'Postu
 
 Route::get('/frontend/account/myproduct',[ProductController::class, 'index'])->name('account.myproduct');
 
-Route::get('/frontend/account/addproduct',[ProductController::class, 'create'])->name('account.addproduct');
-Route::post('/frontend/account/addproduct',[ProductController::class, 'store']);
+Route::get('/frontend/account/addproduct',[ProductController::class, 'Getadd'])->name('account.addproduct');
+Route::post('/frontend/account/addproduct',[ProductController::class, 'Postadd']);
+
+Route::get('/frontend/account/editproduct/{id}',[ProductController::class, 'Getedit'])->name('account.editproduct');
+Route::post('/frontend/account/editproduct/{id}',[ProductController::class, 'Postedit']);
+
+Route::get('/frontend/account/deleteproduct/{id}',[ProductController::class, 'Getdestroy'])->name('account.deleteproduct');
+Route::post('/frontend/account/deleteproduct/{id}',[ProductController::class, 'Postdestroy']);
 // Route::get('/frontend/account/addproduct',[ProfilesMembersController::class, 'Getadd'])->name('product.add');
 // Route::post('/frontend/account/addproduct',[ProfilesMembersController::class, 'Postadd'])->name('product.add');
 // Route::post('/frontend/account/addproduct',[ProfilesMembersController::class, '']);
