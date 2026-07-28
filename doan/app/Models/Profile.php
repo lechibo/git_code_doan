@@ -18,4 +18,8 @@ class Profile extends Model
     'id_country',
     'avatar'
 ];
+    public function cart()
+        {
+            return $this->hasMany(Cart::class, 'id_user');
+        }
 }

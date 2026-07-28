@@ -10,6 +10,7 @@
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Home | E-Shopper</title>
+    
     <link href="{{asset('frontend/css/bootstrap.min.css')}}" rel="stylesheet">
     <link href="{{asset('frontend/css/font-awesome.min.css')}}" rel="stylesheet">
     <link href="{{asset('frontend/css/prettyPhoto.css')}}" rel="stylesheet">
@@ -34,11 +35,17 @@
 
     @if (Request::is('appfe'))
     @include('frontend.layouts.slide')
-    @include('frontend.layouts.menuleft')
-
+    <section>
+		<div class="container">
+			<div class="row">
+                @include('frontend.layouts.menuleft')
+                @include('frontend.product.homeproduct')
+            </div>
+		</div>
+	</section>
     @endif
     @yield('content')
-    
+        
     @include('frontend.layouts.footer')
     <!-- <script src="js/jquery.js"></script>
 	<script src="js/bootstrap.min.js"></script>

@@ -8,6 +8,7 @@ use Illuminate\Support\facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Profile;
 use App\Models\Country;
+use App\Models\Product;
 use App\Http\Requests\MemberLoginRequest;
 use App\Http\Requests\MemberRegisterRequest;
 
@@ -23,7 +24,11 @@ class MemberController extends Controller
             return "Bạn chưa đăng nhập!";
         }
         $user=Auth::user();
-        return view('frontend.layouts.app',compact('user'));
+        // show homeproduct
+        $products = Product::orderBy('created_at', 'desc')
+        ->take(6)
+        ->get();
+        return view('frontend.layouts.app',compact('user','products'));
     }
     /**
      * Login.

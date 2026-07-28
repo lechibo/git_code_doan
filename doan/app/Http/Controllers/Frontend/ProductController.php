@@ -25,7 +25,7 @@ class ProductController extends Controller
         return view('frontend.product.myproduct', compact('products'));
         
     }
-
+    
     /**
      * Show the form for creating a new resource.
      */
@@ -39,23 +39,8 @@ class ProductController extends Controller
 
         return view('frontend.product.addproduct', compact('categories', 'brands'));
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function Postadd(ProductRequest  $request)
-    {
-        $data = $request->all();
-
-        $data['id_user'] = Auth::id();
-
-        // Upload nhiều ảnh
-        
-        if ($request->hasFile('image')) {
-
-            $images = [];
-
-            foreach ($request->file('image') as $file) {
+    public function xuly_image(ProductRequest  $request){
+        foreach ($request->file('image') as $file) {
 
                 $imageName = time().'_'.$file->getClientOriginalName();
                 $fullName=pathinfo($imageName,PATHINFO_FILENAME);
@@ -77,10 +62,53 @@ class ProductController extends Controller
                 Image::read($path)
                 ->resize(85,84)
                 ->save(public_path('images/product/'.$image85));
+            }
+            return $images;
+        }
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function Postadd(ProductRequest  $request)
+    {
+        $data = $request->all();
+
+        $data['id_user'] = Auth::id();
+
+        $data['sale'] = $data['status'] == 1 ? $data['sale']: 0;
+
+        // Upload nhiều ảnh
+        
+        if ($request->hasFile('image')) {
+
+            $images = [];
+
+            // foreach ($request->file('image') as $file) {
+
+            //     $imageName = time().'_'.$file->getClientOriginalName();
+            //     $fullName=pathinfo($imageName,PATHINFO_FILENAME);
+            //     $duoi=$file->getClientOriginalExtension();
+
+            //     $imagefull=$fullName.'_full.'.$duoi;
+            //     $image329=$fullName.'_329x380.'.$duoi;
+            //     $image85=$fullName.'_85x84.'.$duoi;
+
+            //     //lưu full
+            //     $file->move(public_path('images/product/'), $imagefull);
+            //     $images[] = $imagefull;
+            //     //resize
+            //     $path=public_path('images/product/'.$imagefull);
+
+            //     Image::read($path)
+            //     ->resize(329,380)
+            //     ->save(public_path('images/product/'.$image329));
+            //     Image::read($path)
+            //     ->resize(85,84)
+            //     ->save(public_path('images/product/'.$image85));
 
                
-            }
-
+            // }
+            $images =$this->xuly_image($request);
+  
             $data['image'] = json_encode($images);
         }
 
@@ -92,9 +120,11 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Product $product)
+    public function show_productdetail($id)
     {
-        //
+        $product = Product::findOrFail($id);
+        $images = json_decode($product->image, true);
+        return view('frontend.product.productdetail',compact('product','images'));
     }
 
     /**
@@ -107,6 +137,7 @@ class ProductController extends Controller
             ->where('id_user', Auth::id())
             ->firstOrFail();
         $data = $request->all();
+        $data['sale'] = $data['status'] == 1 ? $data['sale']: 0;
         $oldImages = json_decode($product->image, true);
         if (!$oldImages) {
             $oldImages = [];
@@ -146,31 +177,32 @@ class ProductController extends Controller
         // Upload nhiều ảnh
         if ($request->hasFile('image')) {
 
-            foreach ($request->file('image') as $file) {
+            // foreach ($request->file('image') as $file) {
 
-                $imageName = time().'_'.$file->getClientOriginalName();
-                $fullName=pathinfo($imageName,PATHINFO_FILENAME);
-                $duoi=$file->getClientOriginalExtension();
+            //     $imageName = time().'_'.$file->getClientOriginalName();
+            //     $fullName=pathinfo($imageName,PATHINFO_FILENAME);
+            //     $duoi=$file->getClientOriginalExtension();
 
-                $imagefull=$fullName.'_full.'.$duoi;
-                $image329=$fullName.'_329x380.'.$duoi;
-                $image85=$fullName.'_85x84.'.$duoi;
+            //     $imagefull=$fullName.'_full.'.$duoi;
+            //     $image329=$fullName.'_329x380.'.$duoi;
+            //     $image85=$fullName.'_85x84.'.$duoi;
 
-                //lưu full
-                $file->move(public_path('images/product/'), $imagefull);
-                $newImages[] = $imagefull;
-                //resize
-                $path=public_path('images/product/'.$imagefull);
+            //     //lưu full
+            //     $file->move(public_path('images/product/'), $imagefull);
+            //     $newImages[] = $imagefull;
+            //     //resize
+            //     $path=public_path('images/product/'.$imagefull);
 
-                Image::read($path)
-                ->resize(329,380)
-                ->save(public_path('images/product/'.$image329));
-                Image::read($path)
-                ->resize(85,84)
-                ->save(public_path('images/product/'.$image85));
+            //     Image::read($path)
+            //     ->resize(329,380)
+            //     ->save(public_path('images/product/'.$image329));
+            //     Image::read($path)
+            //     ->resize(85,84)
+            //     ->save(public_path('images/product/'.$image85));
 
                
-            }
+            // }
+            $newImages =$this->xuly_image($request);
         }
         $images = array_merge($oldImages, $newImages);
         if(count($images) > 3){
