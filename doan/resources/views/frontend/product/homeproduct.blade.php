@@ -12,7 +12,7 @@
                     <div class="productinfo text-center">
 
                         @if(!empty($images))
-                            <img src="{{ asset('images/product/'.str_replace('_full','_329x380',$images[0])) }}" alt="">
+                            <img src="{{ asset('images/product/'.str_replace('_full','_329x380',$images[0])) }}" alt="" >
                         @endif
 
                         @if($product->status == 1)
@@ -453,3 +453,21 @@
     </div><!--/recommended_items-->
     
 </div>
+@section('js')
+    <script>
+        $(document).ready(function(){
+            $('.add-to-cart').click( function(e){
+                e.preventDefault();
+                $.ajax({
+                    url:$(this).attr('href'),
+                    type:'GET',
+                    success:function(res){
+                        alert(res.message);
+                    }
+            
+                });
+            });
+        });
+
+    </script>
+@endsection

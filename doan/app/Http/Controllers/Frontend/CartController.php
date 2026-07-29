@@ -13,6 +13,26 @@ use Illuminate\Support\facades\Auth;
 
 class CartController extends Controller
 {
+    private function calculateCart(&$cart)
+    {
+        $subTotal = 0;
+
+        foreach ($cart as &$item) {
+
+            $price = ($item['sale'] == 0)
+                ? $item['price']
+                : $item['price'] * ((100 - $item['sale']) / 100);
+
+            $item['price_sale'] = $price;
+            $item['total'] = $price * $item['qty'];
+
+            $subTotal += $item['total'];
+        }
+
+        unset($item);
+
+        return $subTotal;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -21,14 +41,14 @@ class CartController extends Controller
         // session()->forget('cart');
         // dd(session('cart'));
         $cart = session('cart', []);
-      
-        
-        return view('frontend.cart.cart', compact('cart'));
+        $subTotal = $this->calculateCart($cart);
+
+        return view('frontend.cart.cart', compact('cart','subTotal'));
     }
     /**
      * Show the form for adding a new resource.
      */
-    public function add($id)
+    public function add(Request $request,$id)
     {   
         // $product = Product::findOrFail($id);
         // $cart = Cart::where('id_user', Auth::id())
@@ -58,31 +78,46 @@ class CartController extends Controller
                 'id'    => $product->id,
                 'name'  => $product->name,
                 'price' => $product->price,
-                'sale'  => $product->sale,
-                
+                'sale'  => $product->sale,              
                 'qty'   => 1,
                 'image' => $images,
             ];
         }
-
         session()->put('cart', $cart);
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã thêm vào giỏ hàng',
+                
+            ]);
+        }
+        
         // dd(session('cart'));
-
-        return redirect()->route('cart.index');
+        // return redirect()->route('cart.index');
     }
-    public function increase($id)
+    public function increase($id, Request $request)
     {
         $cart = session()->get('cart', []);
 
         if (isset($cart[$id])) {
             $cart[$id]['qty']++;
         }
-
+        $subTotal = $this->calculateCart($cart);
         session()->put('cart', $cart);
 
-        return redirect()->back();
+        return response()->json([
+            'success'=>true,
+            'message'=>'Đã tăng qty +1',
+            'qty'=>$cart[$id]['qty'],
+            'total' => $cart[$id]['total'],
+            'subTotal' => $subTotal,
+            'cartCount'=>count($cart)
+        ]);
+
+
+        // return redirect()->back();
     }
-    public function decrease($id)
+    public function decrease($id, Request $request)
     {
         $cart = session()->get('cart', []);
 
@@ -94,9 +129,18 @@ class CartController extends Controller
           
         }
 
+        $subTotal = $this->calculateCart($cart);
         session()->put('cart', $cart);
+        return response()->json([
+            'success'=>true,
+            'message'=>'Đã giảm qty -1',
+            'qty' => $cart[$id]['qty'],
+            'total' => $cart[$id]['total'],
+            'subTotal' => $subTotal,
+            'cartCount' => count($cart)
+        ]);
 
-        return redirect()->back();
+        // return redirect()->back();
     }
     /**
      * Show the form for creating a new resource.
@@ -143,11 +187,19 @@ class CartController extends Controller
      */
     public function destroy( $id)
     {
-        $cart = session()->get('cart');
+        $cart = session()->get('cart', []);
         if(isset($cart[$id])) {
             unset($cart[$id]); // delete theo id
-            session()->put('cart', $cart); // update session
         }
-        return redirect()->back();
+        $subTotal = $this->calculateCart($cart);
+        session()->put('cart', $cart); // update session
+
+        return response()->json([
+        'success' => true,
+        'message' => 'Đã xóa sản phẩm',
+        'subTotal' => $subTotal,
+       
+        'cartCount' => count($cart)
+    ]);
     }
 }

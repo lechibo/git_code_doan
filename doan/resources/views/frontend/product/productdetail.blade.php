@@ -65,10 +65,14 @@
                                 @endif
                                 <label>Quantity:</label>
                                 <input type="text" value="3" />
-                                <button type="button" class="btn btn-fefault cart">
+                                <!-- <button type="button" class="btn btn-fefault cart">
                                     <i class="fa fa-shopping-cart"></i>
                                     Add to cart
-                                </button>
+                                </button> -->
+                                <a href="{{route('cart.add',$product->id)}}" class="btn btn-default cart">
+                                <i class="fa fa-shopping-cart"></i>
+                                    Add to cart
+                                </a>
                             </span>
                             <p><b>Availability:</b> In Stock</p>
                             <p><b>Condition:</b> {{ $product->status == 1 ? 'Sale' : 'New' }}</p>
@@ -374,7 +378,17 @@
             $('#zoom-link').attr('href',$(this).data('full') );
 
         });
+        $('.cart').click(function(e){
+            e.preventDefault();
+            $.ajax({
+                url:$(this).attr('href'),
+                type:'GET',
+                success:function(res){
+                    alert(res.message);
+                }
 
+            });
+        });
     });
 </script>
 @endsection

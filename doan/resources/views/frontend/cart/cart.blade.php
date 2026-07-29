@@ -21,13 +21,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @php $subTotal = 0; @endphp
+                    
                     @foreach($cart as $item)
-                    @php
-                        $price = ($item['sale'] == 0) ? $item['price'] : $item['price']*((100-$item['sale'])/100) ;
-                        $total = $price * $item['qty'];
-                        $subTotal += $total;
-                    @endphp
+                    
                     <tr>
                         <td class="cart_product">
                             
@@ -38,27 +34,21 @@
                             <p>Web ID: 1089772</p>
                         </td>
                         <td class="cart_price">
-                            @if($item['sale'] == 1)
-                                <p>
-                                    <del>${{ number_format($item['price'],2) }}</del>
-                                </p>
-
-                                <p style="color:red;">
-                                    ${{ number_format($item['price_sale'],2) }}
-                                </p>
-                            @else
-                                <p>${{ number_format($item['price'],2) }}</p>
-                            @endif
+                            
+                            <p>${{ number_format($item['price_sale'] ?? $item['price'], 2) }}</p>
+                          
                         </td>
                         <td class="cart_quantity">
                             <div class="cart_quantity_button">
-                                <a class="cart_quantity_up" href="{{ route('cart.increase', $item['id']) }}"> + </a>
-                                <input class="cart_quantity_input" type="text" name="quantity" value="{{ $item['qty'] }}" autocomplete="off" size="2">
                                 <a class="cart_quantity_down" href="{{ route('cart.decrease', $item['id']) }}"> - </a>
+
+                                <input class="cart_quantity_input" type="text" name="quantity" value="{{ $item['qty'] }}" autocomplete="off" size="2">
+                                
+                                <a class="cart_quantity_up" href="{{ route('cart.increase', $item['id']) }}"> + </a>
                             </div>
                         </td>
                         <td class="cart_total">
-                            <p class="cart_total_price">${{ number_format($total,2) }}</p>
+                            <p class="cart_total_price">${{ number_format($item['total'],2) }}</p>
                         </td>
                         <td class="cart_delete">
                             <a class="cart_quantity_delete" href="{{ route('cart.delete', $item['id']) }}"><i class="fa fa-times"></i></a>
@@ -135,10 +125,10 @@
             <div class="col-sm-6">
                 <div class="total_area">
                     <ul>
-                        <li>Cart Sub Total <span>${{ number_format($subTotal, 2) }}</span></li>
+                        <li>Cart Sub Total <span id="cart-subtotal">${{ number_format($subTotal, 2) }}</span></li>
                         <li>Eco Tax <span>$0.00</span></li>
                         <li>Shipping Cost <span>Free</span></li>
-                        <li>Total <span>${{ number_format($subTotal, 2) }}</span></li>
+                        <li>Total <span id="cart-total">${{ number_format($subTotal, 2) }}</span></li>
                     </ul>
                         <a class="btn btn-default update" href="">Update</a>
                         <a class="btn btn-default check_out" href="{{route('checkoutpage')}}">Check Out</a>
@@ -147,4 +137,72 @@
         </div>
     </div>
 </section><!--/#do_action-->
+@section('js')
+<script>
+    $(document).ready(function(){
+        function updateSum(res){
+
+            $('#cart-subtotal')
+                .text('$' + Number(res.subTotal).toFixed(2));
+
+            $('#cart-total')
+                .text('$' + Number(res.subTotal).toFixed(2));
+
+        }
+        function updateCart(btn) {
+            $.ajax({
+                url: btn.attr('href'),
+                type: 'GET',
+                success: function(res) {
+
+                    btn.siblings('.cart_quantity_input').val(res.qty);
+
+                    let row = btn.closest('tr');
+
+                    row.find('.cart_total_price')
+                        .text('$' + Number(res.total).toFixed(2));
+                    updateSum(res);
+                }
+            });
+        }
+        $('.cart_quantity_down').click(function(e){
+            e.preventDefault();
+            updateCart($(this));
+        });
+        $('.cart_quantity_up').click(function(e){
+            e.preventDefault();
+            updateCart($(this));
+        });
+        $('.cart_quantity_delete').click(function(e){
+            // console.log("Delete clicked");
+            e.preventDefault();
+
+            let btn = $(this);
+
+            $.ajax({
+
+                url: btn.attr('href'),
+                type: 'GET',
+
+                success:function(res){
+
+                    btn.closest('tr').remove();
+                    // console.log(res);
+                    updateSum(res);
+
+                    if(res.cartCount == 0){
+                        $('tbody').html(
+                            '<tr><td colspan="6" class="text-center">Giỏ hàng trống</td></tr>'
+                        );
+                    }
+
+                }
+
+            });
+
+        });
+        
+    });
+</script>
+@endsection
 @endsection
