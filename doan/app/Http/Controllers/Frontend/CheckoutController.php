@@ -39,7 +39,7 @@ class CheckoutController extends Controller
      */
     public function store(CheckoutRequest $request)
     {
-        // Đến đây dữ liệu đã được validate
+        
         $cart = session('cart', []);
 
         if (empty($cart)) {
