@@ -84,6 +84,21 @@ class CartController extends Controller
             ];
         }
         session()->put('cart', $cart);
+        if (Auth::check()) {
+            
+            $cartDB = Cart::where('id_user', Auth::id())
+            ->where('id_product', $id)
+            ->first();
+            if ($cartDB) {
+                $cartDB->increment('qty');
+            } else {
+                Cart::create([
+                    'id_user' => Auth::id(),
+                    'id_product' => $id,
+                    'qty' => 1,
+                ]);
+            }
+        }
         if ($request->ajax()) {
             return response()->json([
                 'success' => true,
@@ -101,7 +116,13 @@ class CartController extends Controller
 
         if (isset($cart[$id])) {
             $cart[$id]['qty']++;
+
+            Cart::where('id_user', Auth::id())
+            ->where('id_product', $id)
+            ->increment('qty');
         }
+        
+
         $subTotal = $this->calculateCart($cart);
         session()->put('cart', $cart);
 
@@ -125,9 +146,14 @@ class CartController extends Controller
 
             if ($cart[$id]['qty'] > 1) {
                 $cart[$id]['qty']--;
+
+                Cart::where('id_user', Auth::id())
+                ->where('id_product', $id)
+                ->decrement('qty');
             } 
           
         }
+        
 
         $subTotal = $this->calculateCart($cart);
         session()->put('cart', $cart);
@@ -193,6 +219,10 @@ class CartController extends Controller
         }
         $subTotal = $this->calculateCart($cart);
         session()->put('cart', $cart); // update session
+
+        Cart::where('id_user', Auth::id())
+        ->where('id_product', $id)
+        ->delete();
 
         return response()->json([
         'success' => true,

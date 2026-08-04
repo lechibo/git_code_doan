@@ -16,6 +16,9 @@ use App\Http\Controllers\Frontend\CommentController;
 use App\Http\Controllers\Frontend\ProfilesMembersController;
 use App\Http\Controllers\Frontend\CartController;
 use App\Http\Controllers\Frontend\CheckoutController;
+use Illuminate\Http\Request;
+use App\Mail\CheckoutMail; //test hiển thị trang mail.blade.php
+
 // Route::get('/', function () {
 //     return view('welcome');
 // });
@@ -70,8 +73,12 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 //Frontend
 Route::get('/appfe',[MemberController::class, 'index'])->name('appfe');
 Route::get('/login',[MemberController::class, 'login'])->name('login');
-Route::get('/logout', function () {
+Route::get('/logout', function (Request $request) {
     Auth::logout();
+    //xoa session sau khi logout
+    $request->session()->invalidate();
+    $request->session()->regenerateToken(); //Tạo CSRF Token mới để bảo mật
+
     return redirect('/login');
 })->name('logout');
 Route::post('/login',[MemberController::class, 'Postlogin'])->name('login.post');
@@ -106,7 +113,6 @@ Route::get('/frontend/account/detailproduct/{id}',[ProductController::class, 'sh
 // Route::post('/frontend/account/addproduct',[ProfilesMembersController::class, 'Postadd'])->name('product.add');
 // Route::post('/frontend/account/addproduct',[ProfilesMembersController::class, '']);
 Route::get('/frontend/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
-
 Route::get('/frontend/cart', [CartController::class, 'index'])->name('cart.index');
 Route::get('/cart/increase/{id}', [CartController::class, 'increase'])->name('cart.increase');
 Route::get('/cart/decrease/{id}', [CartController::class, 'decrease'])->name('cart.decrease');
@@ -115,6 +121,20 @@ Route::get('/cart/delete/{id}', [CartController::class, 'destroy'])->name('cart.
 //     return asset('frontend/css/bootstrap.min.css');
 // });
 Route::post('/cart/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
-Route::get('/checkoutpage', function () {
-    return view('frontend.sendMail.checkout');
-})->name('checkoutpage');
+
+Route::get('/checkoutpage', [CheckoutController::class, 'index'])
+    ->name('checkoutpage');
+
+// Route::get('/mail-preview', function () {
+
+//     $customer = [
+//         'name' => 'Nham Le',
+//         'email' => 'test@gmail.com',
+//         'phone' => '0123456789',
+//     ];
+
+//     $cart = session('cart', []);
+
+//     return new CheckoutMail($customer, $cart);
+
+// });

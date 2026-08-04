@@ -12,7 +12,9 @@ use App\Models\Category;
 use App\Http\Requests\CheckoutRequest;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 use App\Models\Profile;
+use App\Mail\CheckoutMail;
 
 use Illuminate\Support\facades\Auth;
 
@@ -23,7 +25,23 @@ class CheckoutController extends Controller
      */
     public function index()
     {
-        //
+        $cart = session('cart', []);
+
+        $subTotal = 0;
+
+        foreach ($cart as &$item) {
+
+            $price = ($item['sale'] == 0)
+                ? $item['price']
+                : $item['price'] * ((100 - $item['sale']) / 100);
+
+            $item['price_sale'] = $price;
+            $item['total'] = $price * $item['qty'];
+
+            $subTotal += $item['total'];
+        }
+
+        return view('frontend.sendMail.checkout', compact('cart','subTotal'));
     }
 
     /**
@@ -56,11 +74,14 @@ class CheckoutController extends Controller
             ]);
             $data['password'] = Hash::make($request->password);
             $data['level'] = 0;
-            $user = Profile::create($data);
+            $user = User::create($data);
             if($user){
                 // return redirect()->back()->with('success','Register thành công!');
                 // Đăng nhập
                 Auth::login($user);
+                return back()->with('success', 'Đã đăng ký thành công');
+            }else {
+                return back()->with('error', 'Không tạo được user');
             }
         }
 
@@ -81,7 +102,11 @@ class CheckoutController extends Controller
             'price' => $total,
         ]);
 
-        // Mail::to($request->email)->send(new CheckoutMail($checkout, $cart));
+        
+        Mail::to($request->email)->send(new CheckoutMail(
+            $request->all(),
+            $cart
+        ));
 
         session()->forget('cart');
 

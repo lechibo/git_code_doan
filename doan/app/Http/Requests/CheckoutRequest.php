@@ -25,7 +25,7 @@ class CheckoutRequest extends FormRequest
         $rules = [
             'name'  => 'required|string|max:255',
             'email' => 'required|email|max:255',
-            'phone' => 'required|max:11',
+            'phone' => 'nullable|max:11',
         ];
 
         if (!auth()->check()) {
@@ -38,13 +38,13 @@ class CheckoutRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Vui lòng nhập họ tên.',
+        'name.required' => 'Vui lòng nhập họ tên.',
 
         'email.required' => 'Vui lòng nhập email.',
         'email.email' => 'Email không đúng định dạng.',
         'email.unique' => 'Email đã tồn tại. Vui lòng đăng nhập hoặc sử dụng email khác.',
 
-        'phone.required' => 'Vui lòng nhập số điện thoại.',
+        // 'phone.required' => 'Vui lòng nhập số điện thoại.',
 
         'password.required' => 'Vui lòng nhập mật khẩu.',
         'password.min' => 'Mật khẩu phải có ít nhất 8 ký tự.',

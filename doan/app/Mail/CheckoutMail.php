@@ -13,13 +13,15 @@ use Illuminate\Queue\SerializesModels;
 class CheckoutMail extends Mailable
 {
     use Queueable, SerializesModels;
-
+    public $customer;
+    public $cart;
     /**
      * Create a new message instance.
      */
-    public function __construct()
+    public function __construct($customer, $cart)
     {
-        //
+        $this->customer = $customer;
+        $this->cart = $cart;
     }
 
     /**
@@ -28,7 +30,7 @@ class CheckoutMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Checkout Mail',
+            subject: 'Order Confirmation',
         );
     }
 
@@ -38,7 +40,7 @@ class CheckoutMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'frontend.sendMail.mail',
         );
     }
 

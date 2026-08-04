@@ -11,6 +11,7 @@ use App\Models\Country;
 use App\Models\Product;
 use App\Http\Requests\MemberLoginRequest;
 use App\Http\Requests\MemberRegisterRequest;
+use App\Models\Cart;
 
 class MemberController extends Controller
 {
@@ -43,7 +44,35 @@ class MemberController extends Controller
         if($request->remember_me){
             $remember=true;
         }
+
         if(Auth::attempt($login,$remember)){
+            $request->session()->regenerate();
+
+            //tao lại session từ database carts
+            $carts = Cart::where('id_user', Auth::id())->get();
+            $sessionCart = [];
+            foreach ($carts as $cart) {
+
+                $product = Product::find($cart->id_product);
+
+                if (!$product) {
+                    continue;
+                }
+
+                $images = json_decode($product->image, true);
+
+                $sessionCart[$product->id] = [
+                    'id'    => $product->id,
+                    'name'  => $product->name,
+                    'price' => $product->price,
+                    'sale'  => $product->sale,
+                    'qty'   => $cart->qty,
+                    'image' => $images,
+                ];
+            }
+
+            session()->put('cart', $sessionCart);
+
             $user=Auth::user();
             if($user->level==1){
                 return redirect()->route('profile.index');
