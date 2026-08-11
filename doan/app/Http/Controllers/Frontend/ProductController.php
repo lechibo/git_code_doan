@@ -25,7 +25,98 @@ class ProductController extends Controller
         return view('frontend.product.myproduct', compact('products'));
         
     }
-    
+    public function search(Request $request)
+    {
+        $keyword = $request->name;
+
+        $products = Product::where('name', 'like', '%' . $keyword . '%')
+            ->paginate(9);
+
+        return view('frontend.product.search', compact('products', 'keyword'));
+    }
+    public function searchAdvanced(Request $request)
+    {
+        $query = Product::query();
+
+        if($request->filled('name'))
+            //$request->filled('name') =Input::has('name')
+        {
+            $query->where('name','like','%'.$request->name.'%');
+            //$request->name=Input::get('name')
+        }
+
+        if($request->filled('category'))
+        {
+            $query->where('id_category',$request->category);
+        }
+
+        if($request->filled('brand'))
+        {
+            $query->where('id_brand',$request->brand);
+        }
+
+        if($request->filled('status'))
+        {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('price')) {
+
+        switch ($request->price) {
+
+            case '1':
+                $query->whereRaw("
+                    (
+                        CASE
+                            WHEN status = 1
+                            THEN price * (100 - sale) / 100
+                            ELSE price
+                        END
+                    ) BETWEEN ? AND ?
+                ", [0, 1000]);
+                break;
+
+            case '2':
+                $query->whereRaw("
+                    (
+                        CASE
+                            WHEN status = 1
+                            THEN price * (100 - sale) / 100
+                            ELSE price
+                        END
+                    ) BETWEEN ? AND ?
+                ", [1000, 5000]);
+                break;
+
+            case '3':
+                $query->whereRaw("
+                    (
+                        CASE
+                            WHEN status = 1
+                            THEN price * (100 - sale) / 100
+                            ELSE price
+                        END
+                    ) > ?
+                ", [5000]);
+                break;
+        }
+    }
+
+        $products = $query->paginate(9)->withQueryString();
+
+        $categories = Category::all();
+
+        $brands = Brand::all();
+
+        return view(
+            'frontend.product.searchadvanced',
+            compact(
+                'products',
+                'categories',
+                'brands'
+            )
+        );
+    }
     /**
      * Show the form for creating a new resource.
      */

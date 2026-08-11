@@ -44,6 +44,7 @@
 		</div>
 	</section>
     @endif
+
     @yield('content')
         
     @include('frontend.layouts.footer')

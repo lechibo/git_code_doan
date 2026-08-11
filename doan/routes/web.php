@@ -122,8 +122,10 @@ Route::get('/cart/delete/{id}', [CartController::class, 'destroy'])->name('cart.
 // });
 Route::post('/cart/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
 
-Route::get('/checkoutpage', [CheckoutController::class, 'index'])
-    ->name('checkoutpage');
+Route::get('/checkoutpage', [CheckoutController::class, 'index'])->name('checkoutpage');
+
+Route::get('/search', [ProductController::class, 'search'])->name('product.search');
+Route::get('/searchadvanced', [ProductController::class, 'searchAdvanced'])->name('product.searchadvanced');
 
 // Route::get('/mail-preview', function () {
 
