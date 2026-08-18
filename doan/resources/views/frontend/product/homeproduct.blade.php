@@ -1,7 +1,8 @@
 <div class="col-sm-9 padding-right">
 <div class="features_items"><!--features_items-->
+    
     <h2 class="title text-center">Features Items</h2>
-    @foreach($products as $product)
+    <!-- @foreach($products as $product)
         @php
             $images = json_decode($product->image, true);
         @endphp
@@ -64,7 +65,10 @@
             </div>
         </div>
 
-    @endforeach
+    @endforeach -->
+    <div id="product-list">
+        @include('frontend.product.product_listForsearchadvanced_ajax')
+    </div>
 </div><!--features_items-->
 
 <div class="category-tab"><!--category-tab-->

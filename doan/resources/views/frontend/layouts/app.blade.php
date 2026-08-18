@@ -35,7 +35,7 @@
 
     @if (Request::is('appfe'))
     @include('frontend.layouts.slide')
-    <section>
+    <section data-page="home">
 		<div class="container">
 			<div class="row">
                 @include('frontend.layouts.menuleft')

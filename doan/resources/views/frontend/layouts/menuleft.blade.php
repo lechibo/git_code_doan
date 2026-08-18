@@ -137,4 +137,72 @@
 
 </div>
 </div>
-				
+@section('js')
+<script>
+	$(document).ready(function(){
+		// Hàm hỗ trợ nhận biết tên trang hiện tại
+        function getCurrentPage() {
+            // Lấy từ attribute data-page trên thẻ chứa (ví dụ: <section id="main-content" data-page="home">)
+            let page = $('section[data-page]').data('page'); 
+            
+            // Hoặc nếu không gắn data-page, có thể nhận biết qua URL
+            if (!page) {
+                let path = window.location.pathname;
+                if (path.includes('searchadvancedajax')) return 'searchadvancedajax';
+                if (path.includes('searchadvanced')) return 'searchadvanced';
+                return 'home';
+            }
+            return page;
+        }
+
+		// Hàm gửi Ajax xử lý lọc giá
+		function filterByPrice(minPrice, maxPrice) {
+			let currentPage = getCurrentPage(); // Lấy tên trang hiện tại ('home', 'searchadvanced', 'searchadvancedajax')
+
+			let sendData = {
+				min_price: minPrice,
+				max_price: maxPrice,
+				page_type: currentPage
+			};
+
+			$.ajax({
+				url: "{{ route('product.searchpricebar') }}",
+				type: 'GET',
+				data: sendData,
+				dataType: 'html',
+				success: function(htmlResponse) {
+					
+					//  Trang Chủ
+					if (currentPage === 'home') {
+						// Chỉ đè HTML vào khung 6 sản phẩm mới nhất của Trang chủ
+						$('#product-list').html(htmlResponse);
+					} 
+					
+					//  render ra trang Search Advanced
+					else if (currentPage === 'searchadvanced') {
+						// Đè HTML vào khung kết quả tìm kiếm nâng cao
+						$('#product-list').html(htmlResponse);
+					} 
+					
+					// render ra trang Search Advanced Ajax
+					else if (currentPage === 'searchadvancedajax') {
+						// Đè HTML vào container riêng biệt của trang Ajax
+						$('#product-list').html(htmlResponse);
+					}
+
+				},
+				error: function(xhr) {
+                    console.log('Lỗi lọc giá:', xhr.responseText);
+                }
+
+			});
+		}
+		// Bắt sự kiện kéo thanh slider
+        $('#sl2').slider().on('slideStop', function(ev){
+            let minPrice = ev.value[0];
+            let maxPrice = ev.value[1];
+            filterByPrice(minPrice, maxPrice);
+        });
+	});
+</script>
+@endsection	

@@ -127,6 +127,7 @@ Route::get('/checkoutpage', [CheckoutController::class, 'index'])->name('checkou
 Route::get('/search', [ProductController::class, 'search'])->name('product.search');
 Route::get('/searchadvanced', [ProductController::class, 'searchAdvanced'])->name('product.searchadvanced');
 Route::get('/searchadvancedajax', [ProductController::class, 'searchAdvancedAjax'])->name('product.searchadvancedajax');
+Route::get('/searchpricebar', [ProductController::class, 'searchPriceBar'])->name('product.searchpricebar');
 // Route::get('/mail-preview', function () {
 
 //     $customer = [

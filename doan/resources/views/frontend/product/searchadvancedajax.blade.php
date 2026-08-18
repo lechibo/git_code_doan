@@ -1,6 +1,6 @@
 @extends('frontend.layouts.app')
 @section('content')
-<section>
+<section data-page="searchadvancedajax">
     <div class="container">
         <div class="row">
             @include('frontend.layouts.menuleft')
@@ -54,7 +54,7 @@
 
                                 </option>
 
-                            @endforeach
+                            @endforeach 
 
                         </select>
 

@@ -1,4 +1,4 @@
-@if($products->count())
+@if($products->count()> 0)
 
     @foreach($products as $product)
         @php
@@ -65,9 +65,12 @@
 
     @endforeach
 
-    <div class="text-center">
-        {{ $products->links() }}
-    </div>
+    {{-- CHỈ HIỂN THỊ PHÂN TRANG NẾU DỮ LIỆU CÓ HÀM LINKS (Trang Search) --}}
+    @if (method_exists($products, 'links'))
+        <div class="text-center">
+            {{ $products->links() }}
+        </div>
+    @endif
 @else
     <h4>Không tìm thấy sản phẩm.</h4>
 @endif

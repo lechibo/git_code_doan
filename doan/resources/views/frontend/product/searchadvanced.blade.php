@@ -1,11 +1,12 @@
 @extends('frontend.layouts.app')
 @section('content')
-<section>
+<section data-page="searchadvanced">
     <div class="container">
         <div class="row">
             @include('frontend.layouts.menuleft')
             <div class="col-sm-9 padding-right">
                 <div class="features_items"><!--features_items-->
+                
                     <h2 class="title text-center">Features Items</h2>
                     <form action="{{ route('product.searchadvanced') }}" method="GET" style="display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
 
@@ -73,7 +74,7 @@
                         </button>
 
                     </form>
-                    @if($products->count())
+                    <!-- @if($products->count())
                         @foreach($products as $product)
                             @php
                                 $images = json_decode($product->image, true);
@@ -143,7 +144,10 @@
                         </div>
                     @else
                         <h4>Không tìm thấy sản phẩm.</h4>
-                    @endif
+                    @endif -->
+                <div id="product-list">
+                    @include('frontend.product.product_listForsearchadvanced_ajax')
+                </div>
                 </div><!--features_items-->
             </div>
         </div>

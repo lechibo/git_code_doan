@@ -202,6 +202,61 @@ class ProductController extends Controller
     // Nếu load trang bình thường
     return view('frontend.product.searchadvancedajax', compact('products', 'categories', 'brands'));
     }
+
+    public function searchPriceBar(Request $request){
+        // Lấy tham số từ Request
+        $minPrice = $request->input('min_price', 0);
+        $maxPrice = $request->input('max_price', 5000);
+        $pageType = $request->input('page_type', 'home');
+
+        // Query chung lọc theo giá
+        $query = Product::whereBetween('price', [$minPrice, $maxPrice]);
+
+        $categories = Category::all();
+
+        $brands = Brand::all();
+
+        // Lấy 6 sản phẩm mới nhất
+        if ($pageType === 'home') {
+            $products = $query->latest()->take(6)->get();
+
+           
+            return view('frontend.product.product_listForsearchadvanced_ajax', compact('products', 'categories', 'brands'))->render();
+        } 
+
+        //  Trang Search Advanced
+        if ($pageType === 'searchadvanced') {
+            if ($request->filled('keyword')) {
+                $query->where('name', 'like', '%' . $request->input('keyword') . '%');
+            }
+            $products = $query->paginate(9)->withQueryString();
+
+            
+            return view('frontend.product.product_listForsearchadvanced_ajax', compact('products', 'categories', 'brands'))->render();
+        } 
+
+        // Trang Search Advanced Ajax
+        if ($pageType === 'searchadvancedajax') {
+            if ($request->filled('keyword')) {
+                $query->where('name', 'like', '%' . $request->input('keyword') . '%');
+            }
+            $products = $query->paginate(9)->withQueryString();
+
+            
+            return view('frontend.product.product_listForsearchadvanced_ajax', compact('products', 'categories', 'brands'))->render();
+        }
+
+        $products = $query->paginate(9)->withQueryString();
+
+        // Nếu gọi bằng AJAX
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('frontend.product.product_listForsearchadvanced_ajax', compact('products', 'categories', 'brands'))->render()
+            ]);
+        }
+        
+        // return view('frontend.product.searchadvancedajax', compact('products', 'categories', 'brands'));
+    }
     /**
      * Show the form for creating a new resource.
      */
