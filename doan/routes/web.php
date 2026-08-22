@@ -1,6 +1,7 @@
 <?php
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\http\Controllers\HomeController;
 use App\http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProfilesController;
@@ -63,7 +64,7 @@ Route::get('/admin/dashboard',[DashboardController::class, 'index'])->name('dash
 
 
 Auth::routes();
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+// Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 // Route::get('/test', function () {
 //     dd(Auth::user());
@@ -72,7 +73,7 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 
 //Frontend
 Route::get('/appfe',[MemberController::class, 'index'])->name('appfe');
-Route::get('/login',[MemberController::class, 'login'])->name('login');
+Route::get('/login',[MemberController::class, 'login'])->name('login')->middleware('memberLogin');
 Route::get('/logout', function (Request $request) {
     Auth::logout();
     //xoa session sau khi logout
@@ -81,9 +82,9 @@ Route::get('/logout', function (Request $request) {
 
     return redirect('/login');
 })->name('logout');
-Route::post('/login',[MemberController::class, 'Postlogin'])->name('login.post');
-Route::get('/register',[MemberController::class, 'create'])->name('register');
-Route::post('/register',[MemberController::class, 'Postcreate'])->name('register.post');
+Route::post('/login',[MemberController::class, 'Postlogin'])->name('login.post')->middleware('memberLogin');
+Route::get('/register',[MemberController::class, 'create'])->name('register')->middleware('memberLogin');
+Route::post('/register',[MemberController::class, 'Postcreate'])->name('register.post')->middleware('memberLogin');
 
 Route::get('/bloglist',[FrontendBlogController::class, 'index'])->name('bloglist');
 Route::get('/blogdetail/{id}',[FrontendBlogController::class, 'show'])->name('blogdetail');
@@ -141,3 +142,12 @@ Route::get('/searchpricebar', [ProductController::class, 'searchPriceBar'])->nam
 //     return new CheckoutMail($customer, $cart);
 
 // });
+Route::group([
+    'middleware' => ['admin']
+], function () {
+
+    Route::get('/home', [HomeController::class, 'index'])->name('home');
+
+    // Route::get('/adminpage', [App\Http\Controllers\DemoController::class, 'demo']);
+
+});

@@ -21,9 +21,10 @@ class MemberController extends Controller
     public function index()
     {
         
-        if(!Auth::check()){
-            return "Bạn chưa đăng nhập!";
-        }
+        // if(!Auth::check()){
+        //     return "Bạn chưa đăng nhập!";
+            
+        // }
         $user=Auth::user();
         // show homeproduct
         $products = Product::orderBy('created_at', 'desc')
@@ -46,6 +47,9 @@ class MemberController extends Controller
         }
 
         if(Auth::attempt($login,$remember)){
+            
+
+            
             $request->session()->regenerate();
 
             //tao lại session từ database carts
@@ -74,8 +78,9 @@ class MemberController extends Controller
             session()->put('cart', $sessionCart);
 
             $user=Auth::user();
+            // dd($user->level);
             if($user->level==1){
-                return redirect()->route('profile.index');
+                return redirect()->route('dashboard.index');
             }else{
                 return redirect()->route('appfe');
             }
