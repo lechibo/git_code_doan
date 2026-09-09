@@ -117,7 +117,7 @@ class AdminController extends Controller
     
     public function updateProduct(Request $request, $id)
     {
-        // Validate trực tiếp các trường bắt buộc (KHÔNG bắt buộc 'image')
+        
         $request->validate([
             'name'        => 'required|string|max:255',
             'price'       => 'required|numeric',
@@ -125,7 +125,7 @@ class AdminController extends Controller
             'id_brand'    => 'required',
             'status'      => 'required',
             'detail'      => 'required',
-            'image.*'     => 'image|mimes:jpeg,png,jpg,gif|max:2048' // Validate định dạng nếu có chọn ảnh
+            'image.*'     => 'image|mimes:jpeg,png,jpg,gif|max:2048' 
         ], [
             'name.required'        => 'Vui lòng nhập tên sản phẩm',
             'price.required'       => 'Vui lòng nhập giá sản phẩm',
@@ -136,33 +136,32 @@ class AdminController extends Controller
 
         $product = Product::findOrFail($id);
         
-        // Bỏ _token và _method khỏi dữ liệu lưu DB
+        
         $data = $request->except(['_token', '_method', 'image_delete', 'image']);
 
-        // Xử lý giảm giá: Nếu không có sale thì gán sale = 0
+        
         $data['sale'] = ($request->status == 1) ? ($request->sale ?? 0) : 0;
 
         $oldImages = json_decode($product->image, true) ?? [];
         $deleteList = $request->input('image_delete', []);
 
-        // Lọc ra danh sách ảnh cũ còn giữ lại
+        
         $remainingImages = array_values(array_diff($oldImages, $deleteList));
 
-        // Upload ảnh mới
+      
         $newImages = [];
         if ($request->hasFile('image')) {
             $newImages = $this->xuly_image($request);
         }
 
-        //  Gom tổng số ảnh
+        
         $finalImages = array_merge($remainingImages, $newImages);
 
-        //  Validate tối đa 3 ảnh
         if (count($finalImages) > 3) {
             return back()->withErrors(['image' => 'Sản phẩm chỉ được có tối đa 3 ảnh.'])->withInput();
         }
 
-        // Xóa file vật lý đối với ảnh chọn xóa
+      
         foreach ($deleteList as $deleteImage) {
             if (in_array($deleteImage, $oldImages)) {
                 @unlink(public_path('images/product/' . $deleteImage));
@@ -171,14 +170,14 @@ class AdminController extends Controller
             }
         }
 
-        // Lưu mảng ảnh vào DB dưới dạng JSON
+        
         $data['image'] = json_encode($finalImages);
         $product->update($data);
 
         return redirect()->route('admin.productmanagement')->with('success', 'Cập nhật sản phẩm thành công.');
     }
 
-    // Hàm hỗ trợ upload, resize ảnh
+    
     private function xuly_image($request)
     {
         $uploadedImages = [];
@@ -192,11 +191,11 @@ class AdminController extends Controller
                 $image329 = $fullName . '_329x380.' . $duoi;
                 $image85 = $fullName . '_85x84.' . $duoi;
 
-                // Lưu file gốc
+                
                 $file->move(public_path('images/product/'), $imagefull);
                 $uploadedImages[] = $imagefull;
 
-                // Resize ảnh bằng Intervention Image
+                
                 $path = public_path('images/product/' . $imagefull);
                 \Image::read($path)->resize(329, 380)->save(public_path('images/product/' . $image329));
                 \Image::read($path)->resize(85, 84)->save(public_path('images/product/' . $image85));
