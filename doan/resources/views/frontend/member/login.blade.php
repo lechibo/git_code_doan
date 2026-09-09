@@ -17,6 +17,7 @@
 								<input type="checkbox" class="checkbox" name="remember_me"> 
 								Keep me signed in
 							</span>
+							<a href="{{route('forgotpassword')}}">forgot password!</a>
                             
                             <!-- <button type="submit" class="btn btn-default">Login</button>
                             <a href="{{ route('register') }}" class="btn btn-default">Register</a> -->

@@ -16,4 +16,8 @@ class Checkout extends Model
         'price'
        
     ];
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'id_user', 'id');
+    }
 }

@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\ProfilesController;
 use App\Http\Controllers\Admin\CountryController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Frontend\ProductController;
 use App\Http\Controllers\Admin\BlogController as AdminBlogcontroller;
 use App\Http\Controllers\Frontend\MemberController;
@@ -17,6 +18,8 @@ use App\Http\Controllers\Frontend\CommentController;
 use App\Http\Controllers\Frontend\ProfilesMembersController;
 use App\Http\Controllers\Frontend\CartController;
 use App\Http\Controllers\Frontend\CheckoutController;
+use App\Http\Controllers\Frontend\ForgotPasswordController;
+
 use Illuminate\Http\Request;
 use App\Mail\CheckoutMail; //test hiển thị trang mail.blade.php
 
@@ -151,3 +154,45 @@ Route::group([
     // Route::get('/adminpage', [App\Http\Controllers\DemoController::class, 'demo']);
 
 });
+
+Route::get('/forgotpassword', [ForgotPasswordController::class, 'getForgotPass'])->name('forgotpassword');
+Route::post('/forgotpassword', [ForgotPasswordController::class, 'sendResetLink'])->name('user.password.email');
+
+Route::get('/reset-password/{id}', [ForgotPasswordController::class, 'showResetForm'])
+    ->middleware('signed')->name('user.password.reset');
+
+Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'])
+    ->name('user.password.update');
+
+Route::middleware(['auth', 'admin'])->group(function () {
+    // User
+    Route::get('/admin/users', [AdminController::class, 'Users'])
+        ->name('admin.usermanagement');
+
+    Route::get('/admin/users/edit/{id}', [AdminController::class, 'editUser'])
+        ->name('admin.users.edit');
+
+    Route::post('/admin/users/edit/{id}', [AdminController::class, 'updateUser'])
+        ->name('admin.users.update');
+
+    Route::post('/admin/users/{id}', [AdminController::class, 'deleteUser'])
+        ->name('admin.users.delete');
+
+    // Product
+    Route::get('/admin/products', [AdminController::class, 'Products'])
+        ->name('admin.productmanagement');
+
+    Route::get('/admin/products/{id}/edit', [AdminController::class, 'editProduct'])
+        ->name('admin.products.edit');
+
+    Route::post('/admin/products/{id}', [AdminController::class, 'updateProduct'])
+        ->name('admin.products.update');
+
+    Route::delete('/admin/products/{id}', [AdminController::class, 'deleteProduct'])
+        ->name('admin.products.delete');
+    //Purchase
+    Route::get('/admin/purchases', [AdminController::class, 'Purchases'])
+        ->name('admin.purchasehistory');
+
+});
+   

@@ -60,8 +60,17 @@
                                     </div>
                                 </div>
                             </a>
-                            <form class="app-search position-absolute">
-                                <input type="text" class="form-control" placeholder="Search &amp; enter">
+                            <!-- <form class="app-search position-absolute" action="{{ url()->current() }}"  method="GET">
+                                <input type="text" name="name" class="form-control" placeholder="Search &amp; enter" value="{{ request('name') }}">
+                                <a class="srh-btn">
+                                    <i class="ti-close"></i>
+                                </a>
+                            </form> -->
+                            <form class="app-search position-absolute" action="{{ url()->current() }}"  method="GET">
+                                <input type="text" name="search" class="form-control" placeholder="Search &amp; enter" value="{{ request('search') }}">
+                                <button type="submit">
+                                    Search
+                                </button>
                                 <a class="srh-btn">
                                     <i class="ti-close"></i>
                                 </a>
